@@ -6,25 +6,38 @@
   <title>Student Progress Overview</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <div class="container">
   <h1>Student Progress Overview</h1>
-  <table id="progressTable">
-    <thead>
-      <tr>
-        <th>Student ID</th>
-        <th>Started</th>
-        <th>Completed</th>
-        <th>Marked</th>
-        <th>Mastered</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Student data will populate here -->
-    </tbody>
-  </table>
+  
+  <!-- Login Section -->
+  <div id="loginSection">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button onclick="login()">Login</button>
+  </div>
+
+  <!-- Table Section -->
+  <div id="progressSection" style="display: none;">
+    <button onclick="logout()">Logout</button>
+    <table id="progressTable">
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Started</th>
+          <th>Completed</th>
+          <th>Marked</th>
+          <th>Mastered</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Student data will populate here -->
+      </tbody>
+    </table>
+  </div>
 </div>
 
 <script>
@@ -40,8 +53,38 @@
 
   // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
   const db = firebase.firestore();
 
+  // Login Function
+  function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("progressSection").style.display = "block";
+        fetchStudentProgress();
+      })
+      .catch(error => {
+        console.error("Login error:", error);
+        alert("Login failed. Please check your credentials.");
+      });
+  }
+
+  // Logout Function
+  function logout() {
+    auth.signOut()
+      .then(() => {
+        document.getElementById("loginSection").style.display = "block";
+        document.getElementById("progressSection").style.display = "none";
+      })
+      .catch(error => {
+        console.error("Logout error:", error);
+      });
+  }
+
+  // Fetch Student Progress Function
   async function fetchStudentProgress() {
     const progressTableBody = document.getElementById('progressTable').getElementsByTagName('tbody')[0];
     progressTableBody.innerHTML = ''; // Clear any existing rows
@@ -50,23 +93,33 @@
       // Fetch all documents from 'tasks' collection
       const snapshot = await db.collection("tasks").get();
       snapshot.forEach(doc => {
-        const studentData = doc.data().tasks;  // Assuming each doc has a 'tasks' object
+        const studentData = doc.data().tasks;
         const row = progressTableBody.insertRow();
 
         // Populate row with student ID and progress data
         row.insertCell().textContent = doc.id;  // Student ID
-        row.insertCell().textContent = studentData.started ? 'Yes' : 'No';
-        row.insertCell().textContent = studentData.completed ? 'Yes' : 'No';
-        row.insertCell().textContent = studentData.marked ? 'Yes' : 'No';
-        row.insertCell().textContent = studentData.mastered ? 'Yes' : 'No';
+        row.insertCell().textContent = studentData["5.1-1"].started ? 'Yes' : 'No'; // Example for field check
+        row.insertCell().textContent = studentData["5.1-1"].completed ? 'Yes' : 'No';
+        row.insertCell().textContent = studentData["5.1-1"].marked ? 'Yes' : 'No';
+        row.insertCell().textContent = studentData["5.1-1"].mastered ? 'Yes' : 'No';
       });
     } catch (error) {
       console.error("Error retrieving student progress:", error);
+      alert("Error retrieving student progress. Please check permissions.");
     }
   }
 
-  // Call the function to load progress data on page load
-  window.onload = fetchStudentProgress;
+  // Track Authentication State
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      document.getElementById("loginSection").style.display = "none";
+      document.getElementById("progressSection").style.display = "block";
+      fetchStudentProgress();
+    } else {
+      document.getElementById("loginSection").style.display = "block";
+      document.getElementById("progressSection").style.display = "none";
+    }
+  });
 </script>
 </body>
 </html>
