@@ -12,14 +12,11 @@
 <body>
 <div class="container">
   <h1>Student Progress Overview</h1>
-  
-  <!-- Login form -->
-  <div id="loginForm">
-    <h2>Login</h2>
-    <input type="email" id="email" placeholder="Email" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button onclick="login()">Login</button>
-    <p id="loginError" style="color: red;"></p>
+
+  <!-- Student List for Navigation -->
+  <div id="studentList" class="student-list">
+    <h2>Students</h2>
+    <ul id="studentNames"></ul>
   </div>
   
   <!-- Student progress container (hidden until login is successful) -->
@@ -52,11 +49,8 @@
 
     auth.signInWithEmailAndPassword(email, password)
       .then(userCredential => {
-        // Hide the login form and show the student progress section
         document.getElementById('loginForm').style.display = 'none';
         document.getElementById('studentProgressContainer').style.display = 'block';
-        
-        // Load student progress data
         fetchStudentProgress();
       })
       .catch(error => {
@@ -67,7 +61,9 @@
 
   async function fetchStudentProgress() {
     const container = document.getElementById('studentProgressContainer');
-    container.innerHTML = ''; // Clear existing content
+    const studentList = document.getElementById('studentNames');
+    container.innerHTML = ''; 
+    studentList.innerHTML = ''; 
 
     try {
       // Fetch all documents from 'users' collection to get student names and UIDs
@@ -77,8 +73,14 @@
         const userId = userDoc.id;
         const userName = `${userDoc.data().firstName} ${userDoc.data().lastName}`;
 
+        // Add student name to the list with a link to their section
+        const studentLink = document.createElement('li');
+        studentLink.innerHTML = `<a href="#${userId}">${userName}</a>`;
+        studentList.appendChild(studentLink);
+
         // Create a section for each student
         const studentSection = document.createElement('section');
+        studentSection.id = userId; 
         studentSection.classList.add('student-section');
 
         // Add student name and UID
@@ -110,18 +112,26 @@
         if (tasksDoc.exists) {
           const tasks = tasksDoc.data().tasks;
 
+          // Sort lessons by module and lesson number
+          const sortedLessons = Object.keys(tasks).sort((a, b) => {
+            const [moduleA, lessonA] = a.split('-').map(Number);
+            const [moduleB, lessonB] = b.split('-').map(Number);
+            return moduleA - moduleB || lessonA - lessonB;
+          });
+
           // Populate table with progress for each lesson
-          for (const [lesson, progress] of Object.entries(tasks)) {
+          sortedLessons.forEach(lesson => {
+            const progress = tasks[lesson];
             const row = document.createElement('tr');
             row.innerHTML = `
               <td>${lesson}</td>
-              <td>${progress.started ? 'Yes' : 'No'}</td>
-              <td>${progress.completed ? 'Yes' : 'No'}</td>
-              <td>${progress.checked ? 'Yes' : 'No'}</td>
-              <td>${progress.mastered ? 'Yes' : 'No'}</td>
+              <td>${progress?.started ? 'Yes' : 'No'}</td>
+              <td>${progress?.completed ? 'Yes' : 'No'}</td>
+              <td>${progress?.checked ? 'Yes' : 'No'}</td>
+              <td>${progress?.mastered ? 'Yes' : 'No'}</td>
             `;
             tbody.appendChild(row);
-          }
+          });
         } else {
           const row = document.createElement('tr');
           row.innerHTML = `<td colspan="5">No progress data available</td>`;
@@ -135,14 +145,10 @@
     }
   }
 
-  // Check if the user is already logged in
   auth.onAuthStateChanged(user => {
     if (user) {
-      // Hide the login form and show the student progress section
       document.getElementById('loginForm').style.display = 'none';
       document.getElementById('studentProgressContainer').style.display = 'block';
-      
-      // Load student progress data
       fetchStudentProgress();
     }
   });
