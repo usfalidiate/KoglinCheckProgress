@@ -13,13 +13,21 @@
 <div class="container">
   <h1>Student Progress Overview</h1>
 
+  <!-- Login Form -->
+  <div id="loginForm">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p id="loginError" style="color: red;"></p>
+  </div>
+
   <!-- Student List for Navigation -->
-  <div id="studentList" class="student-list">
+  <div id="studentList" class="student-list" style="display: none;">
     <h2>Students</h2>
     <ul id="studentNames"></ul>
   </div>
   
-  <!-- Student progress container (hidden until login is successful) -->
+  <!-- Student progress container -->
   <div id="studentProgressContainer" style="display: none;">
     <!-- Student progress data will populate here -->
   </div>
@@ -49,8 +57,16 @@
 
     auth.signInWithEmailAndPassword(email, password)
       .then(userCredential => {
-        document.getElementById('loginForm').style.display = 'none';
-        document.getElementById('studentProgressContainer').style.display = 'block';
+        console.log("Login successful");
+        if (document.getElementById('loginForm')) {
+          document.getElementById('loginForm').style.display = 'none';
+        }
+        if (document.getElementById('studentProgressContainer')) {
+          document.getElementById('studentProgressContainer').style.display = 'block';
+        }
+        if (document.getElementById('studentList')) {
+          document.getElementById('studentList').style.display = 'block';
+        }
         fetchStudentProgress();
       })
       .catch(error => {
@@ -60,14 +76,15 @@
   }
 
   async function fetchStudentProgress() {
+    console.log("Fetching student progress...");
     const container = document.getElementById('studentProgressContainer');
     const studentList = document.getElementById('studentNames');
     container.innerHTML = ''; 
     studentList.innerHTML = ''; 
 
     try {
-      // Fetch all documents from 'users' collection to get student names and UIDs
       const usersSnapshot = await db.collection("users").get();
+      console.log("Users retrieved:", usersSnapshot.docs.length);
 
       for (const userDoc of usersSnapshot.docs) {
         const userId = userDoc.id;
@@ -109,6 +126,8 @@
 
         // Fetch the 'tasks' document for the current student
         const tasksDoc = await db.collection("tasks").doc(userId).get();
+        console.log(`Tasks for ${userName}:`, tasksDoc.exists);
+
         if (tasksDoc.exists) {
           const tasks = tasksDoc.data().tasks;
 
@@ -133,6 +152,7 @@
             tbody.appendChild(row);
           });
         } else {
+          console.log(`No tasks data found for ${userName}`);
           const row = document.createElement('tr');
           row.innerHTML = `<td colspan="5">No progress data available</td>`;
           tbody.appendChild(row);
@@ -147,8 +167,16 @@
 
   auth.onAuthStateChanged(user => {
     if (user) {
-      document.getElementById('loginForm').style.display = 'none';
-      document.getElementById('studentProgressContainer').style.display = 'block';
+      console.log("User is logged in");
+      if (document.getElementById('loginForm')) {
+        document.getElementById('loginForm').style.display = 'none';
+      }
+      if (document.getElementById('studentProgressContainer')) {
+        document.getElementById('studentProgressContainer').style.display = 'block';
+      }
+      if (document.getElementById('studentList')) {
+        document.getElementById('studentList').style.display = 'block';
+      }
       fetchStudentProgress();
     }
   });
