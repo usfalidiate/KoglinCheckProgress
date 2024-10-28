@@ -21,6 +21,20 @@
     <p id="loginError" style="color: red;"></p>
   </div>
 
+  <!-- Summary Table for Completed Lessons -->
+  <div id="summaryTable" style="display: none;">
+    <h2>Class Summary of Completed Lessons</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Completed Lessons</th>
+        </tr>
+      </thead>
+      <tbody id="summaryTableBody"></tbody>
+    </table>
+  </div>
+
   <!-- Student List for Navigation -->
   <div id="studentList" class="student-list" style="display: none;">
     <h2>Students</h2>
@@ -69,21 +83,39 @@
     console.log("Fetching student progress...");
     const container = document.getElementById('studentProgressContainer');
     const studentList = document.getElementById('studentNames');
+    const summaryTableBody = document.getElementById('summaryTableBody');
     container.innerHTML = ''; 
     studentList.innerHTML = ''; 
+    summaryTableBody.innerHTML = '';
 
     try {
       const usersSnapshot = await db.collection("users").get();
       console.log("Users retrieved:", usersSnapshot.docs.length);
 
-      for (const userDoc of usersSnapshot.docs) {
-        const userId = userDoc.id;
-        const userName = `${userDoc.data().firstName} ${userDoc.data().lastName}`;
+      // Extract and sort users by last name
+      const sortedUsers = usersSnapshot.docs.map(doc => ({
+        id: doc.id,
+        firstName: doc.data().firstName,
+        lastName: doc.data().lastName
+      })).sort((a, b) => a.lastName.localeCompare(b.lastName));
+
+      for (const user of sortedUsers) {
+        const userId = user.id;
+        const userName = `${user.firstName} ${user.lastName}`;
 
         // Add student name to the list with a link to their section
         const studentLink = document.createElement('li');
         studentLink.innerHTML = `<a href="#${userId}">${userName}</a>`;
         studentList.appendChild(studentLink);
+
+        // Summary Table Row
+        const summaryRow = document.createElement('tr');
+        const nameCell = document.createElement('td');
+        nameCell.innerHTML = `<a href="#${userId}">${userName}</a>`;
+        summaryRow.appendChild(nameCell);
+        
+        // Cell to hold completed lessons
+        const completedLessonsCell = document.createElement('td');
 
         // Create a section for each student
         const studentSection = document.createElement('section');
@@ -118,6 +150,8 @@
         const tasksDoc = await db.collection("tasks").doc(userId).get();
         console.log(`Tasks for ${userName}:`, tasksDoc.exists);
 
+        let completedLessons = []; // Array to store completed lessons for this student
+
         if (tasksDoc.exists) {
           const tasks = tasksDoc.data().tasks;
 
@@ -140,6 +174,11 @@
               <td>${progress?.mastered ? 'Yes' : 'No'}</td>
             `;
             tbody.appendChild(row);
+
+            // Add completed lessons to the summary if marked as completed
+            if (progress?.completed) {
+              completedLessons.push(lesson);
+            }
           });
         } else {
           console.log(`No tasks data found for ${userName}`);
@@ -148,6 +187,12 @@
           tbody.appendChild(row);
         }
 
+        // Update the summary table with completed lessons for this student
+        completedLessonsCell.textContent = completedLessons.join(", ");
+        summaryRow.appendChild(completedLessonsCell);
+        summaryTableBody.appendChild(summaryRow);
+
+        // Append the student section to the container
         container.appendChild(studentSection);
       }
     } catch (error) {
@@ -167,6 +212,9 @@
       }
       if (document.getElementById('studentList')) {
         document.getElementById('studentList').style.display = 'block';
+      }
+      if (document.getElementById('summaryTable')) {
+        document.getElementById('summaryTable').style.display = 'block';
       }
       fetchStudentProgress(); // Call only once after confirming user login
     }
