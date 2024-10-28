@@ -7,36 +7,39 @@ body {
 }
 
 .container {
-  width: 80%;
+  width: 90%;
   margin: 0 auto;
-  padding-top: 50px;
+  padding-top: 20px;
 }
 
+/* Center the main heading */
 h1 {
   text-align: center;
   color: #333;
+  font-size: 1.5em;
+  margin-bottom: 10px;
 }
 
+/* Style tables for compact layout */
 table {
-  width: 100%;
+  width: 48%;
   border-collapse: collapse;
-  margin: 20px 0;
-  font-size: 1em;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin: 10px;
+  font-size: 0.9em;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  display: inline-block;
+  vertical-align: top;
 }
 
 th, td {
-  padding: 12px 15px;
+  padding: 8px 10px;
   text-align: center;
 }
 
 th {
   background-color: #007bff;
   color: #ffffff;
-}
-
-tr:nth-child(even) {
-  background-color: #f4f4f9;
+  font-size: 0.9em;
 }
 
 td.yes {
@@ -49,23 +52,37 @@ td.no {
   color: #721c24;
 }
 
+/* Alternating row background for better readability */
+tr:nth-child(even) {
+  background-color: #f4f4f9;
+}
+
 /* Back to Top Button */
 #backToTopBtn {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  padding: 10px 15px;
-  font-size: 16px;
+  padding: 8px 12px;
+  font-size: 14px;
   background-color: #007bff;
   color: #fff;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  display: none; /* Initially hidden */
+  display: block; /* Always visible */
 }
+
 
 /* Show button when scrolled */
 body.scrolled #backToTopBtn {
   display: block;
+}
+
+/* Reduce font and cell padding for compact display */
+.student-section h2 {
+  font-size: 1.2em;
+  margin-top: 0;
+  margin-bottom: 8px;
+  color: #333;
 }
