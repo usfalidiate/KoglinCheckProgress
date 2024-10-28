@@ -47,6 +47,9 @@
   </div>
 </div>
 
+<!-- Back to Top Button -->
+<button onclick="scrollToTop()" id="backToTopBtn">Back to Top</button>
+
 <script>
   // Firebase configuration with your specific details
   const firebaseConfig = {
@@ -168,10 +171,10 @@
             const row = document.createElement('tr');
             row.innerHTML = `
               <td>${lesson}</td>
-              <td>${progress?.started ? 'Yes' : 'No'}</td>
-              <td>${progress?.completed ? 'Yes' : 'No'}</td>
-              <td>${progress?.checked ? 'Yes' : 'No'}</td>
-              <td>${progress?.mastered ? 'Yes' : 'No'}</td>
+              <td class="${progress?.started ? 'yes' : 'no'}">${progress?.started ? 'Yes' : 'No'}</td>
+              <td class="${progress?.completed ? 'yes' : 'no'}">${progress?.completed ? 'Yes' : 'No'}</td>
+              <td class="${progress?.checked ? 'yes' : 'no'}">${progress?.checked ? 'Yes' : 'No'}</td>
+              <td class="${progress?.mastered ? 'yes' : 'no'}">${progress?.mastered ? 'Yes' : 'No'}</td>
             `;
             tbody.appendChild(row);
 
@@ -198,6 +201,11 @@
     } catch (error) {
       console.error("Error retrieving student progress:", error);
     }
+  }
+
+  // Scroll to top function
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // Check if user is already logged in and avoid calling fetchStudentProgress multiple times
