@@ -28,7 +28,7 @@ table {
 }
 
 th, td {
-  padding: 6px 8px; /* Reduced padding for compact layout */
+  padding: 6px 8px;
   text-align: center;
 }
 
@@ -52,22 +52,23 @@ td.no {
   color: #721c24;
 }
 
-/* Two-column grid layout for student sections */
+/* Responsive grid layout for student sections */
 .student-section {
   display: inline-block;
-  width: 48%; /* Adjust width to fit two columns */
+  width: 100%;
   margin: 1%;
   vertical-align: top;
+  box-sizing: border-box;
 }
 
 .student-section h2 {
   font-size: 1em;
-  margin: 5px 0; /* Reduced space for compact view */
+  margin: 5px 0;
 }
 
 .progress-table {
   width: 100%;
-  font-size: 0.85em; /* Slightly smaller text for compact view */
+  font-size: 0.85em;
 }
 
 /* Back to Top Button */
@@ -83,5 +84,20 @@ td.no {
   border-radius: 5px;
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  display: block; /* Always visible */
+  display: block;
+}
+
+/* Media Queries */
+@media (min-width: 600px) {
+  /* Two columns on tablet-sized screens */
+  .student-section {
+    width: 48%;
+  }
+}
+
+@media (min-width: 900px) {
+  /* Three columns on widescreen or laptop-sized displays */
+  .student-section {
+    width: 31%;
+  }
 }
